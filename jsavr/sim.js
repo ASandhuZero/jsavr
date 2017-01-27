@@ -722,10 +722,11 @@ app.controller("AvrSimController", function($scope){
     $scope.raise_error = function(s){
 	$scope.status = "Error: " + s;
     }
+    // takes number, shifts by 
     $scope.truncate = function(num, bits, twos_complement){
-	var mod = 1<<bits;
-	num = ((num % mod)+mod)%mod;
-	return twos_complement ? (num >= 1<<(bits - 1) ? num - (1<<bits) : num) : num;
+		var mod = 1<<bits;
+		num = ((num % mod)+mod)%mod;
+		return twos_complement ? (num >= 1<<(bits - 1) ? num - (1<<bits) : num) : num;
     }
     $scope.update_sreg = function(result, z, c, n){
 	$scope.debug_log("SREG for",result);
@@ -789,6 +790,13 @@ app.controller("AvrSimController", function($scope){
 	}
     }
     $scope.instructions = {
+    	/*
+	    	see http://www.atmel.com/webdoc/avrassembler for more information
+			format: 				opcode structure
+			c: 						opcode decimal equivalent of binary value
+			exec: 					dunno
+			$scope.[singleletter]:  flag
+    	*/
 		"adc":{"format":"5r5s", "c": 7, "exec":function(c, r, s, i){
 		    var oldC = $scope.C;
 		    $scope.update_sreg($scope.RF[r] + $scope.RF[s] + oldC, true, true, true);
@@ -827,37 +835,79 @@ app.controller("AvrSimController", function($scope){
 		"bld":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
 		"brbc":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
 		"brbs":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brcc":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brcs":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"brcc":{"format":"7i", "c": 488, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.C == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brcs":{"format":"7i", "c": 480, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.C == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
 		"break":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
 		"breq":{"format":"7i", "c": 481, "exec":function(c, r, s, i){
 		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.Z == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
 		    $scope.ram_updated = [];
 		    $scope.updated = ["PC"];}},
-		"brge":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brhc":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brsh":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brid":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brie":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"brge":{"format":"7i", "c": 492, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + (($scope.N ? $scope.V : !$scope.V) ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brhc":{"format":"7i", "c": 493, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.H == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brhs":{"format":"7i", "c": 485, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.H == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brid":{"format":"7i", "c": 495, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.I == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brie":{"format":"7i", "c": 487, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.I == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
 		"brlo":{"format":"7i", "c": 480, "exec":function(c, r, s, i){
 		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.C == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
 		    $scope.ram_updated = [];
 		    $scope.updated = ["PC"];}},
-		"brlt":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brmi":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"brlt":{"format":"7i", "c": 484, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + (($scope.N ? !$scope.V : $scope.V) ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brmi":{"format":"7i", "c": 482, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.N == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
 		"brne":{"format":"7i", "c": 489, "exec":function(c, r, s, i){
 		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.Z == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
 		    $scope.ram_updated = [];
 		    $scope.updated = ["PC"];}},
-		"brpl":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"brpl":{"format":"7i", "c": 490, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.N == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
 		"brsh":{"format":"7i", "c": 488, "exec":function(c, r, s, i){
 		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.C == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
 		    $scope.ram_updated = [];
 		    $scope.updated = ["PC"];}},
-		"brtc":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brts":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brvc":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brvs":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"brtc":{"format":"7i", "c": 494, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.T == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brts":{"format":"7i", "c": 486, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.T == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brvc":{"format":"7i", "c": 491, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.V == 0 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
+		"brvs":{"format":"7i", "c": 483, "exec":function(c, r, s, i){
+		    $scope.PC = $scope.truncate($scope.PC + 1 + ($scope.V == 1 ? (i <= 64 ? i : i-128) : 0),16,false);
+		    $scope.ram_updated = [];
+		    $scope.updated = ["PC"];}},
 		"bset":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
 		"bst":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
 		"call":{}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
@@ -1185,4 +1235,3 @@ app.controller("AvrSimController", function($scope){
 	    }
 	}
     });
-
