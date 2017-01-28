@@ -95,9 +95,14 @@
       <div class="simavr_title">Other</div><br /><div class="simavr_display_button" ng-click="">&nbsp;</div><br />
       <div ng-class="{simavr_reg:true, simavr_updated:is_updated('PC'), simavr_normal:!is_updated('PC')}"><span class="simavr_label">PC: </span>{{PC}}</div><br />
       <br />
-      <div ng-class="'simavr_reg '+(is_updated('Z') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">Z: </span>{{Z}}</div><br />
       <div ng-class="'simavr_reg '+(is_updated('C') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">C: </span>{{C}}</div><br />
+      <div ng-class="'simavr_reg '+(is_updated('Z') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">Z: </span>{{Z}}</div><br />
       <div ng-class="'simavr_reg '+(is_updated('N') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">N: </span>{{N}}</div><br />
+      <div ng-class="'simavr_reg '+(is_updated('V') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">V: </span>{{V}}</div><br />
+      <div ng-class="'simavr_reg '+(is_updated('S') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">S: </span>{{S}}</div><br />
+      <div ng-class="'simavr_reg '+(is_updated('H') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">H: </span>{{H}}</div><br />
+      <div ng-class="'simavr_reg '+(is_updated('T') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">T: </span>{{T}}</div><br />
+      <div ng-class="'simavr_reg '+(is_updated('I') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">I: </span>{{I}}</div><br />
       <br />
       
       <div ng-class="'simavr_reg '+(is_updated(26)||is_updated(27) ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">X: </span>{{truncate(RF[26],8,false)+256*truncate(RF[27],8,false)}}</div><br />
