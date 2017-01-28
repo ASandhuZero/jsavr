@@ -80,9 +80,14 @@ app.controller("AvrSimController", function($scope) {
 			'count': 1
 		};
 		$scope.PC = 0;
-		$scope.Z = 0;
 		$scope.C = 0;
+		$scope.Z = 0;
 		$scope.N = 0;
+		$scope.V = 0;
+		$scope.S = 0;
+		$scope.H = 0;
+		$scope.T = 0;
+		$scope.I = 0;
 		$scope.PIND = 0;
 		$scope.PORTD = 0;
 		$scope.DDRD = 0;
@@ -208,15 +213,12 @@ app.controller("AvrSimController", function($scope) {
 					// - What symbol it wants to make (symbol)
 					// - What kind of symbol it is (symbol_type == "pm" | "ram")
 					// - Whether there was an error (error)
-
 					var result = $scope.directives[d].process(matches);
-
 					// Handle error
 					if (result.error) {
 						$scope.error_on_line(i, result.error);
 						return;
 					}
-
 					// Update symbol
 					if (result.symbol && result.symbol_type) {
 						if (result.symbol_type == "pm") {
@@ -225,7 +227,6 @@ app.controller("AvrSimController", function($scope) {
 							$scope.symbols[result.symbol] = ram_offset;
 						}
 					}
-
 					// Insert data and update offsets
 					if (result.pm_data) {
 						for (var j = 0; j < result.pm_data.length; j++) {
@@ -803,19 +804,22 @@ app.controller("AvrSimController", function($scope) {
 		}
 	}
 	$scope.raise_error = function(s) {
-			$scope.status = "Error: " + s;
-		}
-		// takes number, shifts by 
+		$scope.status = "Error: " + s;
+	}
 	$scope.truncate = function(num, bits, twos_complement) {
 		var mod = 1 << bits;
 		num = ((num % mod) + mod) % mod;
 		return twos_complement ? (num >= 1 << (bits - 1) ? num - (1 << bits) : num) : num;
 	}
-	$scope.update_sreg = function(result, z, c, n) {
+	$scope.update_sreg = function(result, c, z, n, v, s, h, t, i) {
 		$scope.debug_log("SREG for", result);
-		if (z) $scope.Z = $scope.truncate(result, 8, false) == 0 ? 1 : 0;
 		if (c) $scope.C = result >= 256 || result < 0 ? 1 : 0;
+		if (z) $scope.Z = $scope.truncate(result, 8, false) == 0 ? 1 : 0;
 		if (n) $scope.N = $scope.truncate(result, 8, true) < 0 ? 1 : 0;
+		// fix these four - they are not correct
+		if (v) $scope.V = result >= 256 || result < 0 ? 1 : 0; // change
+		if (s) $scope.S = $scope.N ? +!$scope.V : +$scope.V; // implicit cast to 1,0
+		if (h) $scope.H = $scope.truncate(result, 8, true) < 0 ? 1 : 0; // set if bit 3 if result is set
 	}
 	$scope.read_IO = function(s) {
 		if (s == 16) return $scope.PIND & (~($scope.DDRD));
@@ -871,57 +875,52 @@ app.controller("AvrSimController", function($scope) {
 		}
 	}
 	$scope.instructions = {
-		/*
-    	see http://www.atmel.com/webdoc/avrassembler for more information
-		format: 				opcode structure
-		c: 						opcode decimal equivalent of binary value
-		exec: 					dunno
-		$scope.[singleletter]:  flag
-	*/
 		"adc": {
 			"format": "5r5s",
 			"c": 7,
 			"exec": function(c, r, s, i) {
 				var oldC = $scope.C;
-				$scope.update_sreg($scope.RF[r] + $scope.RF[s] + oldC, true, true, true);
+				$scope.update_sreg($scope.RF[r] + $scope.RF[s] + oldC, true, true, true, true, true, true, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] + $scope.RF[s] + oldC, 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC", "Z", "C", "N"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
 		"add": {
 			"format": "5r5s",
 			"c": 3,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] + $scope.RF[s], true, true, true);
+				$scope.update_sreg($scope.RF[r] + $scope.RF[s], true, true, true, true, true, true, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] + $scope.RF[s], 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC", "Z", "C", "N"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
-		"adiw": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"adiw": {},
 		"and": {
 			"format": "5r5s",
 			"c": 8,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] & $scope.RF[s], true, false, true);
+				$scope.V = 0;
+				$scope.update_sreg($scope.RF[r] & $scope.RF[s], false, true, true, false, true, false, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] & $scope.RF[s], 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC", "Z", "C", "N"];
+				$scope.updated = [r, "PC", "Z", "N", "V", "S"];
 			}
 		},
 		"andi": {
 			"format": "4r8i",
 			"c": 7,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] & i, true, false, true);
+				$scope.V = 0;
+				$scope.update_sreg($scope.RF[r] & i, false, true, true, false, true, false, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] & i, 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = ["PC", "Z", "C", "N"];
+				$scope.updated = ["PC", "Z", "N", "V", "S"];
 			}
 		},
 		"asr": {
@@ -930,17 +929,17 @@ app.controller("AvrSimController", function($scope) {
 			"exec": function(c, r, s, i) {
 				var C = $scope.RF[r] % 2 == 0 ? 0 : 1;
 				$scope.RF[r] = $scope.truncate($scope.truncate($scope.RF[r], 8, true) >> 1, 8, false);
-				$scope.update_sreg($scope.RF[r], true, false, true);
+				$scope.update_sreg($scope.RF[r], true, true, true, true, true, false, false, false);
 				$scope.C = C;
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S"];
 			}
 		},
-		"bclr": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"bld": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brbc": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"brbs": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"bclr": {},
+		"bld": {},
+		"brbc": {},
+		"brbs": {},
 		"brcc": {
 			"format": "7i",
 			"c": 488,
@@ -959,7 +958,7 @@ app.controller("AvrSimController", function($scope) {
 				$scope.updated = ["PC"];
 			}
 		},
-		"break": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"break": {},
 		"breq": {
 			"format": "7i",
 			"c": 481,
@@ -1104,90 +1103,93 @@ app.controller("AvrSimController", function($scope) {
 				$scope.updated = ["PC"];
 			}
 		},
-		"bset": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"bst": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"call": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"cbi": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"cbr": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"clc": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"clh": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"cli": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"cln": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"clr": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"cls": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"clt": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"clv": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"clz": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"bset": {},
+		"bst": {},
+		"call": {},
+		"cbi": {},
+		"cbr": {},
+		"clc": {},
+		"clh": {},
+		"cli": {},
+		"cln": {},
+		"clr": {},
+		"cls": {},
+		"clt": {},
+		"clv": {},
+		"clz": {},
 		"com": {
 			"format": "5r",
 			"c": 1184,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg(~($scope.RF[r]), true, false, true);
+				$scope.C = 1;
+				$scope.V = 0;
+				$scope.update_sreg(~($scope.RF[r]), false, true, true, false, true, false, false, false);
 				$scope.RF[r] = $scope.truncate(~($scope.RF[r]), 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S"];
 			}
 		},
 		"cp": {
 			"format": "5r5s",
 			"c": 5,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] - $scope.RF[s], true, true, true);
+				$scope.update_sreg($scope.RF[r] - $scope.RF[s], true, true, true, true, true, true, false, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = ["PC", "Z", "C", "N"];
+				$scope.updated = ["PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
-		"cpc": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"cpc": {},
 		"cpi": {
 			"format": "4r8i",
 			"c": 3,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] - i, true, true, true);
+				$scope.update_sreg($scope.RF[r] - i, true, true, true, true, true, true, false, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = ["PC", "Z", "C", "N"];
+				$scope.updated = ["PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
-		"cpse": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"cpse": {},
 		"dec": {
 			"format": "5r",
 			"c": 1194,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] - 1, true, false, true);
+				$scope.update_sreg($scope.RF[r] - 1, false, true, true, true, true, false, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] - 1, 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S"];
 			}
 		},
-		"eicall": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"iejmp": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"elpm": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"eicall": {},
+		"iejmp": {},
+		"elpm": {},
 		"eor": {
 			"format": "5r5s",
 			"c": 9,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] ^ $scope.RF[s], true, false, true);
+				$scope.V = 0;
+				$scope.update_sreg($scope.RF[r] ^ $scope.RF[s], false, true, true, false, true, false, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] ^ $scope.RF[s], 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC", "Z", "C", "N"];
+				$scope.updated = [r, "PC", "Z", "N", "V", "S"];
 			}
 		},
-		"fmul": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"fmuls": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"fmulsu": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"halt": {
+		"fmul": {},
+		"fmuls": {},
+		"fmulsu": {},
+		"halt": {  // NOT AN AVR INSTRUCTION
 			"format": "n",
 			"c": 1,
-			"exec": function(c, r, s, i) { // NOT AN ACTUAL AVR INSTRUCTION
+			"exec": function(c, r, s, i) {
 				$scope.end();
 			}
 		},
-		"icall": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"ijmp": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"icall": {},
+		"ijmp": {},
 		"in": {
 			"format": "6s5r",
 			"c": 22,
@@ -1202,17 +1204,17 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5r",
 			"c": 1187,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] + 1, true, false, true);
+				$scope.update_sreg($scope.RF[r] + 1, false, true, true, true, true, false, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] + 1, 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC"];
+				$scope.updated = [r, "PC", "Z", "N", "V", "S"];
 			}
 		},
-		"jmp": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"lat": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"las": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"lac": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"jmp": {},
+		"lat": {},
+		"las": {},
+		"lac": {},
 		"ld": {
 			"format": "5rX",
 			"c": 32,
@@ -1226,7 +1228,6 @@ app.controller("AvrSimController", function($scope) {
 					$scope.dec_ptr(reg);
 				}
 				var ptr = $scope.truncate($scope.RF[reg], 8, false) + 256 * $scope.truncate($scope.RF[reg + 1], 8, false);
-				$scope.updated = [r, "PC"];
 				$scope.RF[r] = $scope.truncate($scope.RAM[ptr], 8, false);
 				if (i[1] == "+") {
 					$scope.updated.push(reg);
@@ -1234,6 +1235,7 @@ app.controller("AvrSimController", function($scope) {
 				}
 				$scope.ram_updated = [];
 				$scope.PC++;
+				$scope.updated = [r, "PC"];
 			}
 		},
 		"ldi": {
@@ -1246,10 +1248,10 @@ app.controller("AvrSimController", function($scope) {
 				$scope.updated = [r, "PC"];
 			}
 		},
-		"lds": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"lpm": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"lsl": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"lsr": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"lds": {},
+		"lpm": {},
+		"lsl": {},
+		"lsr": {},
 		"mov": {
 			"format": "5r5s",
 			"c": 11,
@@ -1260,19 +1262,19 @@ app.controller("AvrSimController", function($scope) {
 				$scope.updated = [r, "PC"];
 			}
 		},
-		"movw": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"mul": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"muls": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"mulsu": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"movw": {},
+		"mul": {},
+		"muls": {},
+		"mulsu": {},
 		"neg": {
 			"format": "5r",
 			"c": 1185,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg(-$scope.RF[r], true, true, true);
+				$scope.update_sreg(-$scope.RF[r], true, true, true, true, true, true, false, false);
 				$scope.RF[r] = $scope.truncate(-$scope.RF[r], 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
 		"nop": {
@@ -1288,22 +1290,24 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5r5s",
 			"c": 10,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] | $scope.RF[s], true, false, true);
+				$scope.V = 0;
+				$scope.update_sreg($scope.RF[r] | $scope.RF[s], false, true, true, false, true, false, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] | $scope.RF[s], 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC", "Z", "C", "N"];
+				$scope.updated = [r, "PC", "Z", "N", "V", "S"];
 			}
 		},
 		"ori": {
 			"format": "4r8i",
 			"c": 6,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] | i, true, false, true);
+				$scope.V = 0;
+				$scope.update_sreg($scope.RF[r] | i, false, true, true, false, true, false, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] | i, 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = ["PC", "Z", "C", "N"];
+				$scope.updated = ["PC", "Z", "N", "V", "S"];
 			}
 		},
 		"out": {
@@ -1376,7 +1380,7 @@ app.controller("AvrSimController", function($scope) {
 				$scope.updated = ["PC", "SPH", "SPL"];
 			}
 		},
-		"reti": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"reti": {},
 		"rjmp": {
 			"format": "12i",
 			"c": 12,
@@ -1386,38 +1390,38 @@ app.controller("AvrSimController", function($scope) {
 				$scope.updated = ["PC"];
 			}
 		},
-		"rol": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"ror": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"rol": {},
+		"ror": {},
 		"sbc": {
 			"format": "5r5s",
 			"c": 2,
 			"exec": function(c, r, s, i) {
 				var oldC = $scope.C;
-				$scope.update_sreg($scope.RF[r] - $scope.RF[s] - oldC, true, true, true);
+				$scope.update_sreg($scope.RF[r] - $scope.RF[s] - oldC, true, true, true, true, true, true, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] - $scope.RF[s] - oldC, 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC", "Z", "C", "N"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
-		"sbci": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sbi": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sbic": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sbis": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sbiw": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sbr": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sbrc": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sec": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"seh": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sei": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sen": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"ser": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"ses": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"set": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sev": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sez": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"sleep": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"spm": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"sbci": {},
+		"sbi": {},
+		"sbic": {},
+		"sbis": {},
+		"sbiw": {},
+		"sbr": {},
+		"sbrc": {},
+		"sec": {},
+		"seh": {},
+		"sei": {},
+		"sen": {},
+		"ser": {},
+		"ses": {},
+		"set": {},
+		"sev": {},
+		"sez": {},
+		"sleep": {},
+		"spm": {},
 		"st": {
 			"format": "X5r",
 			"c": 33,
@@ -1433,7 +1437,6 @@ app.controller("AvrSimController", function($scope) {
 					$scope.dec_ptr(reg);
 				}
 				var ptr = $scope.truncate($scope.RF[reg], 8, false) + 256 * $scope.truncate($scope.RF[reg + 1], 8, false);
-				$scope.updated = ["PC"];
 				$scope.ram_updated = [ptr];
 				$scope.RAM[ptr] = $scope.RF[r];
 				$scope.PC++;
@@ -1441,35 +1444,36 @@ app.controller("AvrSimController", function($scope) {
 					$scope.updated.push(reg);
 					$scope.inc_ptr(reg);
 				}
+				$scope.updated = ["PC"];
 			}
 		},
-		"sts": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"sts": {},
 		"sub": {
 			"format": "5r5s",
 			"c": 6,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] - $scope.RF[s], true, true, true);
+				$scope.update_sreg($scope.RF[r] - $scope.RF[s], true, true, true, true, true, true, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] - $scope.RF[s], 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = [r, "PC", "Z", "C", "N"];
+				$scope.updated = [r, "PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
 		"subi": {
 			"format": "4r8i",
 			"c": 5,
 			"exec": function(c, r, s, i) {
-				$scope.update_sreg($scope.RF[r] - i, true, true, true);
+				$scope.update_sreg($scope.RF[r] - i, true, true, true, true, true, true, false, false);
 				$scope.RF[r] = $scope.truncate($scope.RF[r] - i, 8, false);
 				$scope.PC++;
 				$scope.ram_updated = [];
-				$scope.updated = ["PC", "Z", "C", "N"];
+				$scope.updated = ["PC", "C", "Z", "N", "V", "S", "H"];
 			}
 		},
-		"swap": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"tst": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"wdr": {}, // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
-		"xch": {} // UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPDATE THIS UPADATE THIS
+		"swap": {},
+		"tst": {},
+		"wdr": {},
+		"xch": {}
 	};
 	$scope.io_switch = function(i) {
 		if ($scope.io_state.switch_state[i] == "ON") {
@@ -1538,9 +1542,14 @@ app.controller("AvrSimController", function($scope) {
 				scope.control.get_other = function() {
 					return {
 						"PC": scope.PC,
-						"Z": scope.Z,
 						"C": scope.C,
+						"Z": scope.Z,
 						"N": scope.N,
+						"V": scope.V,
+						"S": scope.S,
+						"H": scope.H,
+						"T": scope.T,
+						"I": scope.I,
 						"DDRD": scope.DDRD,
 						"PIND": scope.PIND,
 						"PORTD": scope.PORTD,
