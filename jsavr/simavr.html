@@ -94,6 +94,7 @@
     <div id="simavr_other">
       <div class="simavr_title">Other</div><br /><div class="simavr_display_button" ng-click="">&nbsp;</div><br />
       <div ng-class="{simavr_reg:true, simavr_updated:is_updated('PC'), simavr_normal:!is_updated('PC')}"><span class="simavr_label">PC: </span>{{PC}}</div><br />
+      <div ng-class="{simavr_reg:true, simavr_updated:is_updated('cycles'), simavr_normal:!is_updated('cycles')}"><span class="simavr_label_long">cycles: </span>{{cycles}}</div><br />
       <br />
       <div ng-class="'simavr_reg '+(is_updated('C') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">C: </span>{{C}}</div><br />
       <div ng-class="'simavr_reg '+(is_updated('Z') ? 'simavr_updated' : 'simavr_normal')"><span class="simavr_label">Z: </span>{{Z}}</div><br />
