@@ -1132,15 +1132,95 @@ app.controller("AvrSimController", function($scope) {
 		"call": {},
 		"cbi": {},
 		"cbr": {},
-		"clc": {},
-		"clh": {},
-		"cli": {},
-		"cln": {},
+		"clc": {
+			"format": "n",
+			"c": 38024,
+			"exec": function(c, d, a, k) {
+				$scope.C = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "C"];
+			}
+		},
+		"clh": {
+			"format": "n",
+			"c": 38104,
+			"exec": function(c, d, a, k) {
+				$scope.H = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "H"];
+			}
+		},
+		"cli": {
+			"format": "n",
+			"c": 38136,
+			"exec": function(c, d, a, k) {
+				$scope.I = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "I"];
+			}
+		},
+		"cln": {
+			"format": "n",
+			"c": 38056,
+			"exec": function(c, d, a, k) {
+				$scope.N = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "I"];
+			}
+		},
 		"clr": {},
-		"cls": {},
-		"clt": {},
-		"clv": {},
-		"clz": {},
+		"cls": {
+			"format": "n",
+			"c": 38088,
+			"exec": function(c, d, a, k) {
+				$scope.S = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "S"];
+			}
+		},
+		"clt": {
+			"format": "n",
+			"c": 38120,
+			"exec": function(c, d, a, k) {
+				$scope.T = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "T"];
+			}
+		},
+		"clv": {
+			"format": "n",
+			"c": 38072,
+			"exec": function(c, d, a, k) {
+				$scope.V = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "V"];
+			}
+		},
+		"clz": {
+			"format": "n",
+			"c": 38040,
+			"exec": function(c, d, a, k) {
+				$scope.Z = 0;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "Z"];
+			}
+		},
 		"com": {
 			"format": "5d",
 			"c": 1184,
@@ -1456,15 +1536,95 @@ app.controller("AvrSimController", function($scope) {
 		"sbiw": {},
 		"sbr": {},
 		"sbrc": {},
-		"sec": {},
-		"seh": {},
-		"sei": {},
-		"sen": {},
+		"sec": {
+			"format": "n",
+			"c": 37896,
+			"exec": function(c, d, a, k) {
+				$scope.C = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "C"];
+			}
+		},
+		"seh": {
+			"format": "n",
+			"c": 37976,
+			"exec": function(c, d, a, k) {
+				$scope.H = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "H"];
+			}
+		},
+		"sei": {
+			"format": "n",
+			"c": 38008,
+			"exec": function(c, d, a, k) {
+				$scope.I = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "I"];
+			}
+		},
+		"sen": {
+			"format": "n",
+			"c": 37928,
+			"exec": function(c, d, a, k) {
+				$scope.N = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "N"];
+			}
+		},
 		"ser": {},
-		"ses": {},
-		"set": {},
-		"sev": {},
-		"sez": {},
+		"ses": {
+			"format": "n",
+			"c": 37960,
+			"exec": function(c, d, a, k) {
+				$scope.S = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "S"];
+			}
+		},
+		"set": {
+			"format": "n",
+			"c": 37992,
+			"exec": function(c, d, a, k) {
+				$scope.T = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "T"];
+			}
+		},
+		"sev": {
+			"format": "n",
+			"c": 37944,
+			"exec": function(c, d, a, k) {
+				$scope.V = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "V"];
+			}
+		},
+		"sez": {
+			"format": "n",
+			"c": 37912,
+			"exec": function(c, d, a, k) {
+				$scope.Z = 1;
+				$scope.PC++;
+				$scope.cycles++;
+				$scope.ram_updated = [];
+				$scope.updated = ["PC", "cycles", "Z"];
+			}
+		},
 		"sleep": {},
 		"spm": {},
 		"st": {
