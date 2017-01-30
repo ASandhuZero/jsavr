@@ -1173,7 +1173,7 @@ app.controller("AvrSimController", function($scope) {
 				$scope.PC++;
 				$scope.cycles++;
 				$scope.ram_updated = [];
-				$scope.updated = ["PC", "cycles", "I"];
+				$scope.updated = ["PC", "cycles", "N"];
 			}
 		},
 		"clr": {},
