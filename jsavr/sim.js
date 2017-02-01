@@ -777,7 +777,7 @@ app.controller("AvrSimController", function($scope) {
 		}
 		return acc.join("");
 	}
-	$scope.step = function() { // possibly need to change these i's to k's
+	$scope.step = function() {
 		if (!$scope.running) return;
 		$scope.debug_log($scope.steps.count);
 		for (var k = 0; k < $scope.steps.count; k++) {
@@ -812,16 +812,6 @@ app.controller("AvrSimController", function($scope) {
 		var mod = 1 << bits;
 		num = ((num % mod) + mod) % mod;
 		return twos_complement ? (num >= 1 << (bits - 1) ? num - (1 << bits) : num) : num;
-	}
-	$scope.update_sreg = function(result, c, z, n, v, s, h, t, i) {
-		$scope.debug_log("SREG for", result);
-		if (c) $scope.C = result >= 256 || result < 0 ? 1 : 0;
-		if (z) $scope.Z = $scope.truncate(result, 8, false) == 0 ? 1 : 0;
-		if (n) $scope.N = $scope.truncate(result, 8, true) < 0 ? 1 : 0;
-		// fix these - they are not correct
-		if (v) $scope.V = result >= 256 || result < 0 ? 1 : 0; // change
-		if (s) $scope.S = $scope.N ? +!$scope.V : +$scope.V; // implicit cast to 1,0
-		if (h) $scope.H = $scope.truncate(result, 8, true) < 0 ? 1 : 0; // set if bit 3 if result is set
 	}
 	$scope.read_IO = function(a) {
 		if (a == 16) return $scope.PIND & (~($scope.DDRD));
@@ -876,13 +866,43 @@ app.controller("AvrSimController", function($scope) {
 			$scope.SPH = $scope.truncate($scope.SPH - 1, 8, false);
 		}
 	}
+	$scope.update_sreg = function(d, a, res, c, z, n, v, s, h, t, i) {
+		if (c) $scope.C = $scope.update_C(res);
+		if (z) $scope.Z = $scope.update_Z(res);
+		if (n) $scope.N = $scope.update_N(res);
+		if (v) $scope.V = $scope.update_V(d, a, res);
+		if (s) $scope.S = $scope.update_S(res);
+		if (h) $scope.H = $scope.update_H(d, a, res);
+		// if (t) $scope.T = $scope.update_T(res);
+		// if (i) $scope.I = $scope.update_I(res);
+	}
+	$scope.update_C = function(res) {
+		return res >= 256 || res < 0 ? 1 : 0;
+	}
+	$scope.update_Z = function(res) {
+		return $scope.truncate(res, 8, false) == 0 ? 1 : 0;
+	}
+	$scope.update_N = function(res) {
+		return $scope.truncate(res, 8, true) < 0 ? 1 : 0;
+	}
+	$scope.update_V = function(d, a, res) {
+		return ((d >> 7 == a >> 7) && (res >> 7 != d >> 7)) ? 1 : 0; // set if two's complement overflow 
+	}
+	$scope.update_S = function(res) {
+		return $scope.N ? +!$scope.V : +$scope.V; // implicit cast to 1,0
+	}
+	$scope.update_H = function(d, a, res) {
+		var d_h = $scope.truncate(d, 4, false)
+		var a_h = $scope.truncate(a, 4, false);
+		return ((d_h <= 15) && (d_h + a_h > 15)) ? 1 : 0;
+	}
 	$scope.instructions = {
 		"adc": {
 			"format": "5d5a",
 			"c": 7,
 			"exec": function(c, d, a, k) {
 				var oldC = $scope.C;
-				$scope.update_sreg($scope.RF[d] + $scope.RF[a] + oldC, true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] + $scope.RF[a] + oldC, true, true, true, true, true, true, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] + $scope.RF[a] + oldC, 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -894,7 +914,7 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5d5a",
 			"c": 3,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg($scope.RF[d] + $scope.RF[a], true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] + $scope.RF[a], true, true, true, true, true, true, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] + $scope.RF[a], 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -908,7 +928,7 @@ app.controller("AvrSimController", function($scope) {
 			"c": 8,
 			"exec": function(c, d, a, k) {
 				$scope.V = 0;
-				$scope.update_sreg($scope.RF[d] & $scope.RF[a], false, true, true, false, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] & $scope.RF[a], false, true, true, false, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] & $scope.RF[a], 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -921,7 +941,7 @@ app.controller("AvrSimController", function($scope) {
 			"c": 7,
 			"exec": function(c, d, a, k) {
 				$scope.V = 0;
-				$scope.update_sreg($scope.RF[d] & k, false, true, true, false, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] & k, false, true, true, false, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] & k, 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -934,8 +954,8 @@ app.controller("AvrSimController", function($scope) {
 			"c": 1189,
 			"exec": function(c, d, a, k) {
 				var C = $scope.RF[d] % 2 == 0 ? 0 : 1;
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d], true, true, true, true, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.truncate($scope.RF[d], 8, true) >> 1, 8, false);
-				$scope.update_sreg($scope.RF[d], true, true, true, true, true, false, false, false);
 				$scope.PC++;
 				$scope.cycles++;
 				$scope.ram_updated = [];
@@ -1227,7 +1247,7 @@ app.controller("AvrSimController", function($scope) {
 			"exec": function(c, d, a, k) {
 				$scope.C = 1;
 				$scope.V = 0;
-				$scope.update_sreg(~($scope.RF[d]), false, true, true, false, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], ~($scope.RF[d]), false, true, true, false, true, false, false, false);
 				$scope.RF[d] = $scope.truncate(~($scope.RF[d]), 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -1239,7 +1259,7 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5d5a",
 			"c": 5,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg($scope.RF[d] - $scope.RF[a], true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] - $scope.RF[a], true, true, true, true, true, true, false, false);
 				$scope.PC++;
 				$scope.cycles++;
 				$scope.ram_updated = [];
@@ -1251,7 +1271,7 @@ app.controller("AvrSimController", function($scope) {
 			"format": "4d8k",
 			"c": 3,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg($scope.RF[d] - k, true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] - k, true, true, true, true, true, true, false, false);
 				$scope.PC++;
 				$scope.cycles++;
 				$scope.ram_updated = [];
@@ -1263,12 +1283,12 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5d",
 			"c": 1194,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg($scope.RF[d] - 1, false, true, true, true, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] - 1, false, true, true, true, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] - 1, 8, false);
 				$scope.PC++;
 				$scope.cycles++;
 				$scope.ram_updated = [];
-				$scope.updated = [d, "PC", "cycles", "C", "Z", "N", "V", "S"];
+				$scope.updated = [d, "PC", "cycles", "Z", "N", "V", "S"];
 			}
 		},
 		"eicall": {},
@@ -1279,7 +1299,7 @@ app.controller("AvrSimController", function($scope) {
 			"c": 9,
 			"exec": function(c, d, a, k) {
 				$scope.V = 0;
-				$scope.update_sreg($scope.RF[d] ^ $scope.RF[a], false, true, true, false, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] ^ $scope.RF[a], false, true, true, false, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] ^ $scope.RF[a], 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -1314,7 +1334,7 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5d",
 			"c": 1187,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg($scope.RF[d] + 1, false, true, true, true, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] + 1, false, true, true, true, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] + 1, 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -1384,7 +1404,7 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5d",
 			"c": 1185,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg(-$scope.RF[d], true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], -$scope.RF[d], true, true, true, true, true, true, false, false);
 				$scope.RF[d] = $scope.truncate(-$scope.RF[d], 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -1407,7 +1427,7 @@ app.controller("AvrSimController", function($scope) {
 			"c": 10,
 			"exec": function(c, d, a, k) {
 				$scope.V = 0;
-				$scope.update_sreg($scope.RF[d] | $scope.RF[a], false, true, true, false, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] | $scope.RF[a], false, true, true, false, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] | $scope.RF[a], 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -1420,7 +1440,7 @@ app.controller("AvrSimController", function($scope) {
 			"c": 6,
 			"exec": function(c, d, a, k) {
 				$scope.V = 0;
-				$scope.update_sreg($scope.RF[d] | k, false, true, true, false, true, false, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] | k, false, true, true, false, true, false, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] | k, 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -1521,7 +1541,7 @@ app.controller("AvrSimController", function($scope) {
 			"c": 2,
 			"exec": function(c, d, a, k) {
 				var oldC = $scope.C;
-				$scope.update_sreg($scope.RF[d] - $scope.RF[a] - oldC, true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] - $scope.RF[a] - oldC, true, true, true, true, true, true, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] - $scope.RF[a] - oldC, 8, false);
 				$scope.PC++;
 				$scope.cycles++;
@@ -1658,7 +1678,7 @@ app.controller("AvrSimController", function($scope) {
 			"format": "5d5a",
 			"c": 6,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg($scope.RF[d] - $scope.RF[a], true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] - $scope.RF[a], true, true, true, true, true, true, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] - $scope.RF[a], 8, false);
 				$scope.ram_updated = [];
 				$scope.PC++;
@@ -1670,7 +1690,7 @@ app.controller("AvrSimController", function($scope) {
 			"format": "4d8k",
 			"c": 5,
 			"exec": function(c, d, a, k) {
-				$scope.update_sreg($scope.RF[d] - k, true, true, true, true, true, true, false, false);
+				$scope.update_sreg($scope.RF[d], $scope.RF[a], $scope.RF[d] - k, true, true, true, true, true, true, false, false);
 				$scope.RF[d] = $scope.truncate($scope.RF[d] - k, 8, false);
 				$scope.ram_updated = [];
 				$scope.PC++;
