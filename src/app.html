@@ -1,3 +1,9 @@
 <template>
   <h1>${message}</h1>
+  <form role="form">
+    <textarea value.bind="input" cols="100" rows="10"></textarea>
+  </form>
+  <div class="button-bar">
+    <button class="btn btn-success" click.delegate="run()">Run</button>
+  </div>
 </template>
