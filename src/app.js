@@ -1,7 +1,9 @@
 import {Input} from './avr-input'
+import {Reader} from './reader'
+import {Evaluator} from './evaluator'
 export class App {
   constructor() {
-    this.message = 'Hello World!';
+    this.message = 'This is AVR land!';
     this.input = `Syntax:     LD Rd,X     0«d«31
             LD Rd,Y
             LD Rd,Z
@@ -13,10 +15,16 @@ Example:    LDI R26,0x20
             LDI R30,0x60
             LD R4,-Z         ;Load R4 with loc. 0x5F 
     `;
+    this.assemblyCodeArray = []
+    this.reader = new Reader();
+    this.evaluator = new Evaluator();
+    this.programCounter = 0;
+    this.run()
   }
 
   run() {
-    console.log(this.input.split("\n"));
-    
+    this.assemblyCodeArray = this.reader.Read(this.input);
+    this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
   }
+  
 }
