@@ -49,17 +49,17 @@ Example:    LDI R26,0x20
     // Mostly a note to self. This is the only area where the program will
     // actually evaluate the code. This could be a problem because what if
     // the user wishes to see the evaluation per program counter step
-    Update();
+    this.Update();
   }
   StepBack() {
     let executedProgramCounter = this.programCounter - 1;
     this.setProgramCounter(executedProgramCounter);
-    Update();
+    this.Update();
   }
   StepForward() {
     let executedProgramCounter = this.programCounter + 1;
     this.setProgramCounter(executedProgramCounter);
-    Update();
+    this.Update();
   }
  setProgramCounter(number) {
    if (this.assemblyCodeArray.length > number 
