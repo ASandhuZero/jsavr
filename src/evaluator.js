@@ -3,10 +3,12 @@ export class Evaluator {
 	}
 
 	Evaluate(assemblyCodeArray, programCounter) {
-		for (let i = 0; i < assemblyCodeArray.length; i++) {
-			if (programCounter == i) {
-				console.log(assemblyCodeArray[i]);
-			}
-		}
+    let output = "";
+    for (let i = 0; i < assemblyCodeArray.length; i++) {
+			if (programCounter >= i) {
+				output += assemblyCodeArray[i] + "\n";
+      }
+    }
+    return output;
 	}
 }

@@ -3,7 +3,13 @@
   <form role="form">
     <textarea value.bind="input" cols="100" rows="10"></textarea>
   </form>
+  <register></register>
   <div class="button-bar">
-    <button class="btn btn-success" click.delegate="run()">Run</button>
+    <button class="btn btn-success" click.delegate="Run()">Run</button>
+    <button class="btn btn-success" click.delegate="StepBack()">back</button>
+    <button class="btn btn-success" click.delegate="StepForward()">forward</button>
   </div>
+  <form role="form">
+    <textarea value.bind="output" cols="100" rows="10"></textarea>
+  </form>
 </template>

@@ -1,6 +1,7 @@
 import {Input} from './avr-input'
 import {Reader} from './reader'
 import {Evaluator} from './evaluator'
+import {Register} from './register'
 export class App {
   constructor() {
     this.message = 'This is AVR land!';
@@ -15,16 +16,63 @@ Example:    LDI R26,0x20
             LDI R30,0x60
             LD R4,-Z         ;Load R4 with loc. 0x5F 
     `;
-    this.assemblyCodeArray = []
+    this.output = "placeholder";
+    this.assemblyCodeArray = [];
+    this.programCounter = 0;
+
     this.reader = new Reader();
     this.evaluator = new Evaluator();
-    this.programCounter = 0;
-    this.run()
+
+    this.Run();
+
+    this.registers = [];
+    for (let i = 0; i< 32; i++) {
+      this.registers.push(new Register());
+    }
   }
 
-  run() {
+  //TODO 
+  // I HATE THIS FEELING.
+  // I noticed that I was using this code more than once within the functions
+  // so I wanted to just make this a funciton and call it within the function.
+  // Although what I really want to do is get some sort of logic flow that
+  // within this program.
+  Update() {
+    let new_output = this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
+    this.setOutput(new_output);
+  }
+  Run() {
+    let executedProgramCounter = this.assemblyCodeArray.length - 1;
+    this.setProgramCounter(executedProgramCounter);
     this.assemblyCodeArray = this.reader.Read(this.input);
-    this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
+    // TODO:
+    // Mostly a note to self. This is the only area where the program will
+    // actually evaluate the code. This could be a problem because what if
+    // the user wishes to see the evaluation per program counter step
+    Update();
+  }
+  StepBack() {
+    let executedProgramCounter = this.programCounter - 1;
+    this.setProgramCounter(executedProgramCounter);
+    Update();
+  }
+  StepForward() {
+    let executedProgramCounter = this.programCounter + 1;
+    this.setProgramCounter(executedProgramCounter);
+    Update();
+  }
+ setProgramCounter(number) {
+   if (this.assemblyCodeArray.length > number 
+    && number >= 0) {
+      this.programCounter = number;  
+    }
+    console.log(this.programCounter);
+  }
+  setOutput(output) {
+    // I want to have some sort of filtering here as well but I don't have the
+    // registers done enough to do this. So this is just here for a reminder 
+    // that I should filter the output as well.
+    this.output = output;
   }
   
 }
