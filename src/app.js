@@ -23,9 +23,9 @@ Example:    LDI R26,0x20
     this.evaluator = new Evaluator();
     this.hasLoaded = false;
     this.registers = [];
-    // for (let i = 0; i< 32; i++) {
-    //   this.registers.push(new Register());
-    // }
+    for (let i = 0; i< 32; i++) {
+      this.registers.push(new Register());
+}
   }
   /**
    * Update
