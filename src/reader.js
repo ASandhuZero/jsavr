@@ -1,5 +1,7 @@
 export class Reader {
 	constructor() {
+    this.lastRead = '';
+    this.lastCodeArray = [];
 	}
 
 	/**
@@ -15,7 +17,10 @@ export class Reader {
 		// Then trimming it to remove any excess whitespace.
 		sanitizedArray = sanitizedArray.map(line => line.replace(/;.*/,'').trim());
 		// This is removing JUST newlines from the array.
-		sanitizedArray = sanitizedArray.filter(line => /[^\n]/.test(line));
+    sanitizedArray = sanitizedArray.filter(line => /[^\n]/.test(line));
+
+    this.lastCodeArray = sanitizedArray;
+    this.lastRead = input;
 		return sanitizedArray;
 	}
 	/**
@@ -26,6 +31,9 @@ export class Reader {
 	* parser.
 	*/
 	Read(input) {
+    if (input == this.lastRead) {
+      return this.lastCodeArray;
+    }
 		let assemblyCodeArray = this.SanitizeInput(input);
 		return assemblyCodeArray
 	}
