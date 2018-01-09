@@ -2,8 +2,12 @@ import {Input} from './avr-input'
 import {Reader} from './reader'
 import {Evaluator} from './evaluator'
 import {Register} from './register'
+import {avr} from './avr-details'
+import {inject} from 'aurelia-framework'
+
+@inject(avr)
 export class App {
-  constructor() {
+  constructor(isa) {
     this.message = 'This is AVR land!';
     this.input = `Syntax:     LD Rd,X     0«d«31
             LD Rd,Y
@@ -21,11 +25,6 @@ Example:    LDI R26,0x20
     this.assemblyCodeArray = this.reader.Read(this.input);
     this.programCounter = this.assemblyCodeArray.length-1;
     this.evaluator = new Evaluator();
-    this.hasLoaded = false;
-    this.registers = [];
-    for (let i = 0; i< 32; i++) {
-      this.registers.push(new Register());
-}
   }
   /**
    * Update
