@@ -1,5 +1,6 @@
 <template>
   <div repeat.for="register of registers">
-    ${register.id}<textarea value.bind="name" cols="10" rows="1"></textarea>
+    <textarea value.bind="register.id" cols="10" rows="1"></textarea>
+    <button class="btn btn-success" click.delegate="Increment(register)">Increment</button>
   </div>
 </template>
