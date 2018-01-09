@@ -23,4 +23,29 @@ export class avr {
   getRegisters() {
     return this.registers;
   }
+  Increment(register) {
+    register.id++;
+    console.log("works");
+  }
+  /**
+   * THIS IS A TEST. 
+   * PLEASE REMEMBER THAT THIS IS JUST A PROOF OF CONCEPT THAT 
+   * IT IS POSSIBLE TO ALTER THE STATE OF THE REGISTERS
+   * WITH AN OBJECT.
+   * THE REASON FOR DOING THIS IS THE EVALUATOR MODULE CAN
+   * NOW RETURN AN OBJECT OF THE AFFECTED REGISTERS.
+   * THIS WILL ALLOW THE CHANGE OF REGISTERS.
+   * @param {CODE} code 
+   */
+  Test(code) {
+    let changedObj = {
+      1:2,
+      2:3,
+      3:4
+    };
+    console.log(code);
+    for (let i in changedObj) {
+      this.registers[i].value = changedObj[i];
+    }
+  }
 }

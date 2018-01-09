@@ -50,6 +50,7 @@ Example:    LDI R26,0x20
     this.setProgramCounter(executedProgramCounter)
     let new_output = this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
     this.setOutput(new_output);
+    this.isa.Test(this.output);
   }
   /**
    * Reset

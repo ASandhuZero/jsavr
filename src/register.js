@@ -7,7 +7,4 @@ export class Register {
     this.isa = isa;
     this.registers = this.isa.getRegisters();
   }
-  Increment(register) {
-    register.id++;
-  } 
 }
