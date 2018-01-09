@@ -1,4 +1,4 @@
-import {Register} from './register'
+import {TemplateRegister} from './template-register'
 /**
  * This is an AVR details file. It will be used to inject into the register
  * and app components what the AVR Instruction set should be emulating.
@@ -11,12 +11,16 @@ function getId() {
   return id++;
 }
 
-for (let i = 0; i < 32; i++) {
-  console.log(new Register(getId()));
-}
+
 
 export class avr {
   constructor() {
-
+    this.registers = [];
+    for (let i = 0; i < 32; i++) {
+      this.registers.push(new TemplateRegister(getId()));
+    }
+  }
+  getRegisters() {
+    return this.registers;
   }
 }

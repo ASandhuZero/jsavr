@@ -1,8 +1,10 @@
+import {avr} from './avr-details'
+import {inject} from 'aurelia-framework'
+
+@inject(avr)
 export class Register {
-  
-  constructor(id) {
-    this.id = id
-    console.log(this.id);
-    
-  }
+  constructor(isa) {
+    this.isa = isa;
+    this.registers = this.isa.getRegisters();
+  } 
 }

@@ -1,5 +1,5 @@
 <template>
-    <div repeat.for="register of registers">
-      ${number}<textarea value.bind="name" cols="10" rows="1"></textarea>
-    </div>
+  <div repeat.for="register of registers">
+    ${register.id}<textarea value.bind="name" cols="10" rows="1"></textarea>
+  </div>
 </template>
