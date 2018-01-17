@@ -12,7 +12,7 @@ export class Reader {
 	* @return array of strings
 	*/
 	SanitizeInput(input) {
-		let sanitizedArray = input.split('\n');
+    let sanitizedArray = input.split('\n');
 		// All this is doing is just stripping the comments.
 		// Then trimming it to remove any excess whitespace.
 		sanitizedArray = sanitizedArray.map(line => line.replace(/;.*/,'').trim());
@@ -34,7 +34,7 @@ export class Reader {
     if (input == this.lastRead) {
       return this.lastCodeArray;
     }
-		let assemblyCodeArray = this.SanitizeInput(input);
+    let assemblyCodeArray = this.SanitizeInput(input);
 		return assemblyCodeArray
 	}
 }

@@ -23,10 +23,6 @@ export class avr {
   getRegisters() {
     return this.registers;
   }
-  Increment(register) {
-    register.id++;
-    console.log("works");
-  }
   /**
    * THIS IS A TEST. 
    * PLEASE REMEMBER THAT THIS IS JUST A PROOF OF CONCEPT THAT 

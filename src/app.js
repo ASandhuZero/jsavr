@@ -3,13 +3,14 @@ import {Reader} from './reader'
 import {Evaluator} from './evaluator'
 import {Register} from './register'
 import {avr} from './avr-details'
+import {Scanner} from './scanner'
 import {inject} from 'aurelia-framework'
 
 @inject(avr)
 export class App {
   constructor(isa) {
     this.isa = isa;
-    this.message = 'This is AVR land!';
+    this.message = 'This is suffering';
     this.input = `Syntax:     LD Rd,X     0«d«31
             LD Rd,Y
             LD Rd,Z
@@ -21,13 +22,18 @@ Example:    LDI R26,0x20
             LDI R30,0x60
             LD R4,-Z         ;Load R4 with loc. 0x5F 
     `;
-    this.output = 'placeholder';
-    this.reader = new Reader();
-    this.assemblyCodeArray = this.reader.Read(this.input);
-    this.programCounter = this.assemblyCodeArray.length-1;
-    this.evaluator = new Evaluator();
+    this.evaluated_code = 'placeholder';
     this.registers = this.isa.registers;
+    
+    this.reader = new Reader();
+    this.evaluator = new Evaluator(this.registers);
+    this.scanner = new Scanner();
+    
+    this.Update()
+    this.programCounter = this.assemblyCodeArray.length-1;
+    
   }
+
   /**
    * Update
    * This function is a callback function. 
@@ -38,19 +44,22 @@ Example:    LDI R26,0x20
    */
   Update() {
     this.assemblyCodeArray = this.reader.Read(this.input);
+    for (let line of this.assemblyCodeArray) {
+      this.scanner.Scan(line);
+    }
   }
   /**
    * Run
    * This runs the evaluation of the source code that has been read from the
    * reader object. 
-   * It will also set the output to the new output from the evaluator class.
+   * It will also set the 2 to the new output from the evaluator class.
    * @param {*} executedProgramCounter 
    */
   Run(executedProgramCounter=this.assemblyCodeArray.length-1) {
     this.setProgramCounter(executedProgramCounter)
     let new_output = this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
-    this.setOutput(new_output);
-    this.isa.Test(this.output);
+    this.setEvaluatedCode(new_output);
+    this.isa.Test(this.evaluated_code);
   }
   /**
    * Reset
@@ -95,15 +104,21 @@ Example:    LDI R26,0x20
     console.log(this.programCounter);
   }
   /**
-   * setOutput
+   * setEvaluatedCode
    * Sets the output.
-   * @param {*} output 
+   * @param {*} evaluated_code 
    */
-  setOutput(output) {
+  setEvaluatedCode(evaluated_code) {
     // I want to have some sort of filtering here as well but I don't have the
     // registers done enough to do this. So this is just here for a reminder 
     // that I should filter the output as well.
-    this.output = output;
+    this.evaluated_code = evaluated_code;
   }
-  
+  Test() {
+    console.log(this.assemblyCodeArray);
+    
+    for (let codeline of this.assemblyCodeArray) {
+      this.evaluator.Evaluate(codeline)
+    }
+  }
 }
