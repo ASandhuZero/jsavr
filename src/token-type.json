@@ -1,6 +1,22 @@
 {
-  "whitespace": {
+  "whitespace" : {
     "token" : "None",
     "reg_ex" : "\\s+"
+  },
+  "left paren" : {
+    "token" : "LEFT_PAREN",
+    "reg_ex" : "(" 
+  },
+  "right paren" : {
+    "token" : "RIGHT_PAREN",
+    "reg_ex" : ")" 
+  },
+  "left brace" : {
+    "token" : "LEFT_BRACE",
+    "reg_ex" : "{" 
+  },
+  "right brace" : {
+    "token" : "RIGHT_BRACE",
+    "reg_ex" : "}" 
   }
 }
