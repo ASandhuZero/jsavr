@@ -1,3 +1,6 @@
 {
-  "\\s+": "None"
+  "whitespace": {
+    "token" : "None",
+    "reg_ex" : "\\s+"
+  }
 }

@@ -4,17 +4,15 @@ export class Scanner {
     this.tokens = JSON.parse(tokens);
     this.token_reg_exes = {}
     console.log(this.tokens);
-   for (let token in this.tokens) {
-      let reg_ex = new RegExp(token);
-      console.log(reg_ex);
-      let match = this.tokens[token];
-      this.token_reg_exes[reg_ex] = match;
+
+   for (let token_name in this.tokens) {
+     let token_contents = this.tokens[token_name];
+     let reg_ex_string = token_contents["reg_ex"];
+     let reg_ex = new RegExp(reg_ex_string);
+     if (reg_ex.test(" ")) {
+       console.log("This works!");
+     }
    }
-   for (let token in this.tokens) {
-    console.log(new RegExp(token).test(" "));
-   }
-   console.log(this.token_reg_exes);
-    
   }
   Scan(token) {
     console.log(token);
