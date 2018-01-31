@@ -5,18 +5,18 @@
   },
   "left paren" : {
     "token" : "LEFT_PAREN",
-    "reg_ex" : "(" 
+    "reg_ex" : "\\(" 
   },
   "right paren" : {
     "token" : "RIGHT_PAREN",
-    "reg_ex" : ")" 
+    "reg_ex" : "\\)" 
   },
   "left brace" : {
     "token" : "LEFT_BRACE",
-    "reg_ex" : "{" 
+    "reg_ex" : "\\{" 
   },
   "right brace" : {
     "token" : "RIGHT_BRACE",
-    "reg_ex" : "}" 
+    "reg_ex" : "\\}" 
   }
 }
