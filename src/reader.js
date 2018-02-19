@@ -8,8 +8,8 @@ export class Reader {
 	* Sanitizes the input for the Reader.
 	* This method will return an array of strings to
 	* be read
-	* @param input - string
-	* @return array of strings
+	* @param {string} input - string to be read
+	* @return {array} santizedArray - array of strings
 	*/
 	SanitizeInput(input) {
     let sanitizedArray = input.split('\n');

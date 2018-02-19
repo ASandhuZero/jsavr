@@ -11,7 +11,7 @@ export class App {
   constructor(isa) {
     this.isa = isa;
     this.message = 'This is suffering';
-    this.input = `Syntax:     LD Rd,X     0«d«31
+    this.input = `Syntax:     LD Rd,X
             LD Rd,Y
             LD Rd,Z
 
@@ -28,6 +28,8 @@ Example:    LDI R26,0x20
     this.reader = new Reader();
     this.evaluator = new Evaluator(this.registers);
     this.scanner = new Scanner();
+    this.labels = {};
+    this.definitions = {};
     
     this.Update()
     this.programCounter = this.assemblyCodeArray.length-1;
@@ -43,10 +45,11 @@ Example:    LDI R26,0x20
    * The reader object will then read in the input and update accordingly.
    */
   Update() {
+    let scannerReturnList = [];
     this.assemblyCodeArray = this.reader.Read(this.input);
-    for (let line of this.assemblyCodeArray) {
-      this.scanner.Scan(line);
-    }
+    scannerReturnList = this.scanner.Scan(this.assemblyCodeArray);
+    console.log(scannerReturnList);
+    
   }
   /**
    * Run
