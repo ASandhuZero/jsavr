@@ -11,16 +11,30 @@ export class App {
   constructor(isa) {
     this.isa = isa;
     this.message = 'This is suffering';
-    this.input = `Syntax:     LD Rd,X
-            LD Rd,Y
-            LD Rd,Z
+    this.input = `; some header crap
 
-Example:    LDI R26,0x20
-            LD R2,-X         ;Load R2 with loc. 0x1F
-            LDI R28,0x40
-            LD R3,-Y         ;Load R3 with loc. 0x3F
-            LDI R30,0x60
-            LD R4,-Z         ;Load R4 with loc. 0x5F 
+    .def            io_setup    = r16                       ; used to set up pins as inputs or outputs
+    .equ            constant    = 278
+    .macro          add16                                   ; start macro definition
+                    add         @2,@0                       ; subtract low byte
+                    addi        @3,@1                       ; subtract high byte
+    .endmacro                                               ; end macro def
+    .cseg                                                   ; start of code segment
+    .org            0x0000                                  ; reset vector
+                    rjmp        setup                       ; jump over interrupt vectors
+    .org            0x0100                                  ; start of non-reserved program memory
+    
+    setup:          ser         io_setup                    ; set all bits in register
+                    out         DDRD, io_setup              ; use all pins in PORTD as outputs
+                    out         DDRB, io_setup
+                    ldi         io_setup, 0
+                    ldi         r18, low(constant)
+                    ldi         r19, high(constant)
+                    
+    loop:           add16       r16, r17, r18, r19
+                    out         PORTD, r16
+                    out         PORTB, r17
+                    rjmp        loop
     `;
     this.evaluated_code = 'placeholder';
     this.registers = this.isa.registers;
