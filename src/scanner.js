@@ -19,6 +19,10 @@ export class Scanner {
       
       
     // }
+    // This will be the array of data.
+    this.data_array = [];
+    // This will be the array of code.
+    this.code_array = [];
     // This will be used to have a mapping of the labels to line number.
     this.labels = {};
     // This will be used for the directive mapping.
