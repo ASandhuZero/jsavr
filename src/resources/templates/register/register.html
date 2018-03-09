@@ -1,6 +1,7 @@
 <template>
   <div repeat.for="register of registers">
-    ${register.id}<textarea value.bind="register.value" cols="10" rows="1"></textarea>
+    <!-- So if this doesn't bind properly, try out bind rather than to-view -->
+    ${register.id}<textarea value.to-view="register.value" cols="10" rows="1"></textarea>
     <!-- <button class="btn btn-success" click.delegate="isa.Increment(register)">Increment</button> -->
   </div>
 </template>

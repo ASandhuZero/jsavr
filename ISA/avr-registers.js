@@ -15,8 +15,9 @@ function getId() {
 
 export class avr {
   constructor() {
+    this.register_nums = 32;
     this.registers = [];
-    for (let i = 0; i < 32; i++) {
+    for (let i = 0; i < this.register_nums; i++) {
       this.registers.push(new TemplateRegister(getId()));
     }
   }

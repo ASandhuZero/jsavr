@@ -1,4 +1,4 @@
-export class AVRMap {
+export class AVR {
   constructor() {
     this.fns_map = {
         "MOV" : this.MOV,
