@@ -1,12 +1,8 @@
-import {AVRMap} from './avr-map'
-import {inject} from 'aurelia-framework'
-
-@inject(AVRMap)
 export class Evaluator {
-	constructor(isaMap, registers) {
-    this.isaMap = new AVRMap();
-    this.fns_map = this.isaMap.fns_map;
-    this.registers = registers;
+	constructor(isa) {
+    this.isa = isa;
+    console.log(this.isa)
+    this.opMap = this.isa.operator_map;
 	}
 
 	Evaluate(codeline) {

@@ -79,12 +79,7 @@
             "main": "aurelia-testing",
             "env": "dev"
           },
-          "text",
-          {
-            "name": "avr",
-            "path": "../dependencies/avr",
-            "main": "AVR"
-          }
+          "text"
         ]
       }
     ],

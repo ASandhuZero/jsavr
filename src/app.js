@@ -1,15 +1,15 @@
-import {Input} from './avr-input'
-import {Reader} from './reader'
+// import {Input} from './avr-input'
+import {Avr} from './ISA/avr'
 import {Evaluator} from './evaluator'
-import {Register} from './register'
-import {avr} from './avr-details'
+import {Reader} from './reader'
 import {Scanner} from './scanner'
 import {inject} from 'aurelia-framework'
 
-@inject(avr)
+@inject(Avr)
 export class App {
   constructor(isa) {
     this.isa = isa;
+    this.registers = this.CreateRegisters(this.isa);
     this.message = 'This is suffering';
     this.input = `; some header crap
 
@@ -37,10 +37,9 @@ export class App {
                     rjmp        loop
     `;
     this.evaluated_code = 'placeholder';
-    this.registers = this.isa.registers;
     
     this.reader = new Reader();
-    this.evaluator = new Evaluator(this.registers);
+    this.evaluator = new Evaluator(this.isa);
     this.scanner = new Scanner();
     this.labels = {};
     this.definitions = {};
@@ -49,7 +48,13 @@ export class App {
     this.programCounter = this.assemblyCodeArray.length-1;
     
   }
-
+  /**
+   * CreateRegisters
+   * Creates an array of registers based on the ISA information on registers.
+   */
+  CreateRegisters(isa) {
+    return []
+  }
   /**
    * Update
    * This function is a callback function. 

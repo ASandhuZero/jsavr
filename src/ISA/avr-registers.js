@@ -6,14 +6,17 @@ import {TemplateRegister} from './template-register'
  */
 
 let id = 0;
-
+/**
+ * I really don't like how this is set up.
+ * Might be worth it to have the registers just do this normally?
+ */
 function getId() {
   return id++;
 }
 
 
 
-export class avr {
+export class avr_reg {
   constructor() {
     this.register_nums = 32;
     this.registers = [];
@@ -21,19 +24,11 @@ export class avr {
       this.registers.push(new TemplateRegister(getId()));
     }
   }
+
   getRegisters() {
     return this.registers;
   }
-  /**
-   * THIS IS A TEST. 
-   * PLEASE REMEMBER THAT THIS IS JUST A PROOF OF CONCEPT THAT 
-   * IT IS POSSIBLE TO ALTER THE STATE OF THE REGISTERS
-   * WITH AN OBJECT.
-   * THE REASON FOR DOING THIS IS THE EVALUATOR MODULE CAN
-   * NOW RETURN AN OBJECT OF THE AFFECTED REGISTERS.
-   * THIS WILL ALLOW THE CHANGE OF REGISTERS.
-   * @param {CODE} code 
-   */
+
   Test(code) {
     let changedObj = {
       1:2,
