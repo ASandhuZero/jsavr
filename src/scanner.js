@@ -46,15 +46,24 @@ export class Scanner {
     }
     let assemblyCodeArray = this.SanitizeInput(input);
 		return assemblyCodeArray
-	}
+  }
+  /**
+   * Scan
+   * Scan will take in a string called input. 
+   * It will the read, sanitize, and scan the input.
+   * This is a pseudo scanner.
+   * @param {String} input 
+   */
   Scan(input) {
     // let index = 0;
-    let source_code_array = this.Read(input);
+    // Reads the input and binds it to the variable sourceCodeArray
+    let sourceCodeArray = this.Read(input);
+    // TODO: figure out what tempArray does.
     let temp_array = [];
-    
-    for (let i = 0; i < source_code_array.length; i++) {
-
-      let line = source_code_array[i];
+    // TODO: Figure out if this is doing the actual scanning 
+    for (let i = 0; i < sourceCodeArray.length; i++) {
+      let line = sourceCodeArray[i];
+      // split line by white space and commas
       line = line.split(/\s|,/);
       let array_to_push = line.filter(line => /[^\s]/.test(line));
       array_to_push = this.MakeSenseLabel(array_to_push, i);
@@ -62,9 +71,12 @@ export class Scanner {
     }
     for (let i = 0; i < temp_array.length; i++) {
       this.MakeSenseDirective(temp_array, i);
-
     }
-    return [temp_array, this.labels, this.directives];
+    return {
+      "assemblyCodeArray":temp_array, 
+      "labels":this.labels, 
+      "directives":this.directives
+    };
   }
 
   MakeSenseLabel(temp_array, array_index) {
@@ -91,6 +103,7 @@ export class Scanner {
         this.setEqu(line);
         break;
       case ".macro":
+        // TODO: put this in the method you dummy
         let endMacroIndex = 0;
         console.log(source_code_array);
         for (let i = 0; i < source_code_array.length; i++) {
@@ -105,7 +118,6 @@ export class Scanner {
     }
   }
   setDef(line) {
-    
     let def = line[1];
     let reg = line[3];
     this.directives[def] = reg;

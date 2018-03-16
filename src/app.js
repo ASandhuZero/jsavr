@@ -1,4 +1,3 @@
-// import {Input} from './avr-input'
 import {Avr} from './ISA/avr'
 import {Evaluator} from './evaluator'
 import {Scanner} from './scanner'
@@ -61,6 +60,7 @@ export class App {
     let scannerReturnList = [];
     scannerReturnList = this.scanner.Scan(this.input);
     console.log(scannerReturnList);
+    this.assemblyCodeArray = scannerReturnList["assemblyCodeArray"];
     
   }
   /**
@@ -70,7 +70,7 @@ export class App {
    * It will also set the 2 to the new output from the evaluator class.
    * @param {*} executedProgramCounter 
    */
-  Run(executedProgramCounter=this.assemblyCodeArray.length-1) {
+  Run(executedProgramCounter = this.assemblyCodeArray.length-1) {
     this.setProgramCounter(executedProgramCounter)
     let new_output = this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
     this.setEvaluatedCode(new_output);

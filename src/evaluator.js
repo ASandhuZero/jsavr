@@ -1,7 +1,6 @@
 export class Evaluator {
 	constructor(isa) {
     this.isa = isa;
-    console.log(this.isa)
     this.opMap = this.isa.operator_map;
 	}
 
