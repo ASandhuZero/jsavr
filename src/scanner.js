@@ -1,5 +1,3 @@
-import tokens from 'text!token-type.json'
-
 export class Scanner {
 
 	constructor() {
