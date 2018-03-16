@@ -3,6 +3,8 @@ import tokens from 'text!token-type.json'
 export class Scanner {
 
 	constructor() {
+    // This will keep track of the previous read input.
+    this.lastRead;
     // This will be the array of data.
     this.data_array = [];
     // This will be the array of code.
@@ -12,12 +14,44 @@ export class Scanner {
     // This will be used for the directive mapping.
     this.directives = {};
   }
-  
-  Scan(source_code_array) {
+  /**
+	* Sanitizes the input for the Reader.
+	* This method will return an array of strings to
+	* be read
+	* @param {string} input - string to be read
+	* @return {array} santizedArray - array of strings
+	*/
+	SanitizeInput(input) {
+    let sanitizedArray = input.split('\n');
+		// All this is doing is just stripping the comments.
+		// Then trimming it to remove any excess whitespace.
+		sanitizedArray = sanitizedArray.map(line => line.replace(/;.*/,'').trim());
+		// This is removing JUST newlines from the array.
+    sanitizedArray = sanitizedArray.filter(line => /[^\n]/.test(line));
+
+    this.lastCodeArray = sanitizedArray;
+    this.lastRead = input;
+		return sanitizedArray;
+	}
+	/**
+	* Read will call SanitizeInput to sanitize input.
+	* Takes an input to be sanitized.
+	* Upon recieving the sanitized array of strings,
+	* the array of strings will be tokenized for the
+	* parser.
+	*/
+	Read(input) {
+    if (input == this.lastRead) {
+      return this.lastCodeArray;
+    }
+    let assemblyCodeArray = this.SanitizeInput(input);
+		return assemblyCodeArray
+	}
+  Scan(input) {
     // let index = 0;
+    let source_code_array = this.Read(input);
     let temp_array = [];
-    // console.log(scource_code_array);
-  
+    
     for (let i = 0; i < source_code_array.length; i++) {
 
       let line = source_code_array[i];

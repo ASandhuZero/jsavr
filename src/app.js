@@ -1,7 +1,6 @@
 // import {Input} from './avr-input'
 import {Avr} from './ISA/avr'
 import {Evaluator} from './evaluator'
-import {Reader} from './reader'
 import {Scanner} from './scanner'
 import {inject} from 'aurelia-framework'
 
@@ -9,7 +8,9 @@ import {inject} from 'aurelia-framework'
 export class App {
   constructor(isa) {
     this.isa = isa;
-    this.registers = this.CreateRegisters(this.isa);
+    // TODO I GUESS
+    // get createregisters working
+    this.registers = isa.CreateRegisters();
     this.message = 'This is suffering';
     this.input = `; some header crap
 
@@ -36,24 +37,17 @@ export class App {
                     out         PORTB, r17
                     rjmp        loop
     `;
-    this.evaluated_code = 'placeholder';
-    
-    this.reader = new Reader();
+    this.evaluated_code;
     this.evaluator = new Evaluator(this.isa);
     this.scanner = new Scanner();
     this.labels = {};
     this.definitions = {};
     
     this.Update()
+    // This is an problem because assemblyCodeArray is dependent on Reader
+    // which is now scanner
     this.programCounter = this.assemblyCodeArray.length-1;
     
-  }
-  /**
-   * CreateRegisters
-   * Creates an array of registers based on the ISA information on registers.
-   */
-  CreateRegisters(isa) {
-    return []
   }
   /**
    * Update
@@ -65,8 +59,7 @@ export class App {
    */
   Update() {
     let scannerReturnList = [];
-    this.assemblyCodeArray = this.reader.Read(this.input);
-    scannerReturnList = this.scanner.Scan(this.assemblyCodeArray);
+    scannerReturnList = this.scanner.Scan(this.input);
     console.log(scannerReturnList);
     
   }
@@ -113,7 +106,7 @@ export class App {
    * Sets the program counter and clamps the value to the approiate value.
    * @param {*} number 
    */
-  setProgramCounter(number=0) {
+  setProgramCounter(number = 0) {
     if (this.assemblyCodeArray.length - 1 < number) {
       this.programCounter = this.assemblyCodeArray.length - 1;
     }

@@ -6,6 +6,20 @@ export class Avr {
       "LDI" : this.LDI
     }
   }
+
+  CreateRegisters() {
+    let registers = {};
+    registers["general"] = this.CreateGeneralRegisters();
+    registers["special"] = this.CreateSpecialRegisters();
+    return registers;
+  }
+  
+  CreateGeneralRegisters() {
+    return "General register PLACEHOLDER";
+  }
+  CreateSpecialRegisters() {
+    return "Special register PLACEHOLDER";
+  }
   get registerCount() {
     return this.register_count;
   }
@@ -21,8 +35,8 @@ export class Avr {
   LDI(params) {
     let register = params.registers;
     if (typeof(registers) === Array) {
-        console.log('this should be an error');
-      }
+      console.log('this should be an error');
+    }
     let value = params.value;
     
     return {
