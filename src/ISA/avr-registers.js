@@ -1,4 +1,3 @@
-import {TemplateRegister} from './template-register'
 /**
  * This is an AVR details file. It will be used to inject into the register
  * and app components what the AVR Instruction set should be emulating.
