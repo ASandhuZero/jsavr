@@ -1,17 +1,15 @@
 export class Scanner {
 
 	constructor() {
-    // This will keep track of the previous read input.
-    this.lastRead;
-    // This will be the array of data.
-    this.data_array = [];
-    // This will be the array of code.
-    this.code_array = [];
-    // This will be used to have a mapping of the labels to line number.
+    this.lastReadInput;
+
+    this.dataArray = [];
+    this.codeArray = [];
+
     this.labels = {};
-    // This will be used for the directive mapping.
     this.directives = {};
   }
+
   /**
 	* Sanitizes the input for the Reader.
 	* This method will return an array of strings to
@@ -21,16 +19,15 @@ export class Scanner {
 	*/
 	SanitizeInput(input) {
     let sanitizedArray = input.split('\n');
-		// All this is doing is just stripping the comments.
-		// Then trimming it to remove any excess whitespace.
-		sanitizedArray = sanitizedArray.map(line => line.replace(/;.*/,'').trim());
-		// This is removing JUST newlines from the array.
-    sanitizedArray = sanitizedArray.filter(line => /[^\n]/.test(line));
 
+		sanitizedArray = sanitizedArray.map(line => line.replace(/;.*/,'').trim()); // All this is doing is just stripping the comments. Then trimming it to remove any excess whitespace.
+    sanitizedArray = sanitizedArray.filter(line => /[^\n]/.test(line)); // This is removing JUST newlines from the array.
     this.lastCodeArray = sanitizedArray;
     this.lastRead = input;
+
 		return sanitizedArray;
-	}
+  }
+  
 	/**
 	* Read will call SanitizeInput to sanitize input.
 	* Takes an input to be sanitized.
@@ -45,6 +42,7 @@ export class Scanner {
     let assemblyCodeArray = this.SanitizeInput(input);
 		return assemblyCodeArray
   }
+
   /**
    * Scan
    * Scan will take in a string called input. 
@@ -54,30 +52,28 @@ export class Scanner {
    */
   Scan(input) {
     // let index = 0;
-    // Reads the input and binds it to the variable sourceCodeArray
     let sourceCodeArray = this.Read(input);
-    // TODO: figure out what tempArray does.
-    let temp_array = [];
+    let arrayToReturn = [];
     // TODO: Figure out if this is doing the actual scanning 
     for (let i = 0; i < sourceCodeArray.length; i++) {
       let line = sourceCodeArray[i];
-      // split line by white space and commas
-      line = line.split(/\s|,/);
-      let array_to_push = line.filter(line => /[^\s]/.test(line));
-      array_to_push = this.MakeSenseLabel(array_to_push, i);
-      temp_array.push(array_to_push);
+      line = line.split(/\s|,/); // This is removing JUST newlines from the array.
+      let array_to_push = line.filter(line => /[^\s]/.test(line)); // removing just whitespace lines.
+      array_to_push = this.BindLabels(array_to_push, i); 
+      arrayToReturn.push(array_to_push); 
     }
-    for (let i = 0; i < temp_array.length; i++) {
-      this.MakeSenseDirective(temp_array, i);
+    // Maybe a better way to do this?
+    for (let i = 0; i < arrayToReturn.length; i++) {
+      this.BindDirectives(arrayToReturn, i);
     }
     return {
-      "assemblyCodeArray":temp_array, 
-      "labels":this.labels, 
-      "directives":this.directives
+      "assemblyCodeArray" : arrayToReturn, 
+      "labels" : this.labels, 
+      "directives" : this.directives
     };
   }
 
-  MakeSenseLabel(temp_array, array_index) {
+  BindLabels(temp_array, array_index) {
     let index_to_check = temp_array[0];
     
     if (index_to_check.indexOf(':') > -1) {
@@ -88,12 +84,11 @@ export class Scanner {
     return temp_array;
   }
 
-  MakeSenseDirective(source_code_array, index) {
-    let line = source_code_array[index];
-    
-    let index_to_check = line[0];
-    
-    switch(index_to_check) {
+  BindDirectives(sourceCodeArray, index) {
+    let line = sourceCodeArray[index];
+    let indexToCheck = line[0];
+
+    switch(indexToCheck) {
       case ".def":
         this.setDef(line);
         break;
@@ -101,17 +96,7 @@ export class Scanner {
         this.setEqu(line);
         break;
       case ".macro":
-        // TODO: put this in the method you dummy
-        let endMacroIndex = 0;
-        console.log(source_code_array);
-        for (let i = 0; i < source_code_array.length; i++) {
-          let array_to_check = source_code_array[i];
-          
-          if (array_to_check[0] == ".endmacro") {
-            endMacroIndex = i;
-          }
-        }
-        this.setMacro(source_code_array.slice(index, endMacroIndex));
+        this.setMacro(sourceCodeArray);
         break;
     }
   }
@@ -125,13 +110,24 @@ export class Scanner {
     let value = line[3];
     this.directives[equ] = value;
   }
-  setMacro(sub_array) {
-    
-    let macro_line = sub_array.shift();
+  setMacro(sourceCodeArray) {
+    let endMacroIndex = 0;
+    let startMacroIndex = 0;
+    for (let i = 0; i < sourceCodeArray.length; i++) {
+      let arrayToCheck = sourceCodeArray[i];
+      if (arrayToCheck[0] == '.macro') {
+        startMacroIndex = i;
+      }
+      if (arrayToCheck[0] == ".endmacro") {
+        endMacroIndex = i;
+      }
+    }
+    let subArray = sourceCodeArray.slice(startMacroIndex, endMacroIndex);
+    let macro_line = subArray.shift();
     let macro_def = macro_line[1];
     this.directives[macro_def] = [];
     
-    for (let line of sub_array) {
+    for (let line of subArray) {
       this.directives[macro_def].push(line);
     }
   }
