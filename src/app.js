@@ -7,7 +7,7 @@ import {inject} from 'aurelia-framework'
 export class App {
   constructor(isa) {
     this.isa = isa;
-    // TODO I GUESS
+    // TODO: I GUESS
     // get createregisters working
     this.registers = isa.CreateRegisters();
     this.message = 'This is suffering';
@@ -36,11 +36,11 @@ export class App {
                     out         PORTB, r17
                     rjmp        loop
     `;
-    this.evaluated_code;
+    this.evaluatedCode;
     this.evaluator = new Evaluator(this.isa);
     this.scanner = new Scanner();
     this.labels = {};
-    this.definitions = {};
+    this.definitions = {}; // or directives? TODO: Figure out if this is directives or definitions
     
     this.Update()
     // This is an problem because assemblyCodeArray is dependent on Reader
@@ -53,14 +53,15 @@ export class App {
    * This function is a callback function. 
    * Whenever the text field for the user input changes, as in the source code
    * has changed, and the text field is no longer in the focus of the user,
-   * Update will be called to call the reader object.
-   * The reader object will then read in the input and update accordingly.
+   * Update will be called to call the scanner object.
+   * The scanner object will then read in the input and binds the return object
+   * to scannerReturnObject
    */
   Update() {
-    let scannerReturnList = [];
-    scannerReturnList = this.scanner.Scan(this.input);
-    console.log(scannerReturnList);
-    this.assemblyCodeArray = scannerReturnList["assemblyCodeArray"];
+    let scannerReturnObject = [];
+    scannerReturnObject = this.scanner.Scan(this.input);
+    console.log(scannerReturnObject);
+    this.assemblyCodeArray = scannerReturnObject["assemblyCodeArray"];
     
   }
   /**
@@ -71,10 +72,11 @@ export class App {
    * @param {*} executedProgramCounter 
    */
   Run(executedProgramCounter = this.assemblyCodeArray.length-1) {
-    this.setProgramCounter(executedProgramCounter)
-    let new_output = this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
-    this.setEvaluatedCode(new_output);
-    this.isa.Test(this.evaluated_code);
+    // this.setProgramCounter(executedProgramCounter)
+    // let new_output = this.evaluator.Evaluate(this.assemblyCodeArray, this.programCounter);
+    // this.setEvaluatedCode(new_output);
+    // this.isa.Test(this.evaluated_code);
+    console.log("Placeholder for Run");
   }
   /**
    * Reset
@@ -127,7 +129,7 @@ export class App {
     // I want to have some sort of filtering here as well but I don't have the
     // registers done enough to do this. So this is just here for a reminder 
     // that I should filter the output as well.
-    this.evaluated_code = evaluated_code;
+    this.evaluatedCode = evaluated_code;
   }
   Test() {
     console.log(this.assemblyCodeArray);
