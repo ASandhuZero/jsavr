@@ -3,8 +3,8 @@ export class Scanner {
 	constructor() {
     this.lastReadInput;
 
-    this.dataArray = [];
-    this.codeArray = [];
+    this.dseg = {};
+    this.cseg = {};
 
     this.labels = {};
     this.directives = {};
@@ -85,10 +85,19 @@ export class Scanner {
   }
 
   BindDirectives(sourceCodeArray, index) {
+    let subSourceCodeArray;
     let line = sourceCodeArray[index];
     let indexToCheck = line[0];
 
     switch(indexToCheck) {
+      case ".cseg":
+        subSourceCodeArray = sourceCodeArray.slice(index + 1);
+        this.setCSeg(subSourceCodeArray);
+        break;
+      case ".dseg":
+        subSourceCodeArray = sourceCodeArray.slice(index + 1);
+        this.setDSeg(subSourceCodeArray);
+        break;  
       case ".def":
         this.setDef(line);
         break;
@@ -99,6 +108,27 @@ export class Scanner {
         this.setMacro(sourceCodeArray);
         break;
     }
+  }
+  setCSeg(subSourceCodeArray) {
+    for (let i = 0; i < subSourceCodeArray.length; i++) {
+      let line = subSourceCodeArray[i];
+      if ((new RegExp('seg').test(line))) {
+        return;
+      }
+      this.cseg[i] = line;
+    }
+    console.log(this.cseg);
+  }
+  setDSeg(subSourceCodeArray) {
+    for (let i = 0; i < subSourceCodeArray.length; i++) {
+      let line = subSourceCodeArray[i];
+      if ((new RegExp('seg').test(line))) {
+        console.log(this.dseg)
+        return;
+      }
+      this.dseg[i] = line;
+    }
+    console.log(this.dseg);
   }
   setDef(line) {
     let def = line[1];

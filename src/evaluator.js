@@ -1,6 +1,8 @@
+import * as RAM_address from '../src/resources/m328PB'
 export class Evaluator {
 	constructor(isa) {
     this.isa = isa;
+    console.log(RAM_address);
     this.opMap = this.isa.operator_map;
 	}
 

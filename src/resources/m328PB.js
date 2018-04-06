@@ -1528,3 +1528,6 @@ RAM_address = {
 
 	// ***** END OF FILE ******************************************************
 }
+module.exports = {
+	RAM_address
+}

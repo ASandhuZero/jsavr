@@ -12,7 +12,7 @@ export class App {
     this.registers = isa.CreateRegisters();
     this.message = 'This is suffering';
     this.input = `; some header crap
-
+    .dseg
     .def            io_setup    = r16                       ; used to set up pins as inputs or outputs
     .equ            constant    = 278
     .macro          add16                                   ; start macro definition
