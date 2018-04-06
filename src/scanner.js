@@ -5,7 +5,7 @@ export class Scanner {
 
     this.dseg = {};
     this.cseg = {};
-
+    this.eseg = {};
     this.labels = {};
     this.directives = {};
   }
@@ -85,19 +85,19 @@ export class Scanner {
   }
 
   BindDirectives(sourceCodeArray, index) {
-    let subSourceCodeArray;
     let line = sourceCodeArray[index];
     let indexToCheck = line[0];
-
+    
     switch(indexToCheck) {
       case ".cseg":
-        subSourceCodeArray = sourceCodeArray.slice(index + 1);
-        this.setCSeg(subSourceCodeArray);
+        this.setSeg(sourceCodeArray, index);
         break;
       case ".dseg":
-        subSourceCodeArray = sourceCodeArray.slice(index + 1);
-        this.setDSeg(subSourceCodeArray);
+        this.setSeg(sourceCodeArray, index);
         break;  
+      case ".eseg":
+        this.setSeg(sourceCodeArray, index);
+        break;
       case ".def":
         this.setDef(line);
         break;
@@ -109,26 +109,31 @@ export class Scanner {
         break;
     }
   }
-  setCSeg(subSourceCodeArray) {
+  setSeg(sourceCodeArray, index) {
+    let subSourceCodeArray = sourceCodeArray.slice(index);
+    let segToSet = subSourceCodeArray.shift();
+    segToSet = segToSet[0];
+    let seg;
+    
+    if (segToSet === ".cseg") {
+      seg = this.cseg;
+    }
+    else if (segToSet === ".dseg") {
+      seg = this.dseg;
+    }
+    else if (segToSet === ".eseg") {
+      seg = this.eseg;
+    }
+
     for (let i = 0; i < subSourceCodeArray.length; i++) {
       let line = subSourceCodeArray[i];
       if ((new RegExp('seg').test(line))) {
+        console.log(seg);
         return;
       }
-      this.cseg[i] = line;
+      seg[i] = line;
     }
-    console.log(this.cseg);
-  }
-  setDSeg(subSourceCodeArray) {
-    for (let i = 0; i < subSourceCodeArray.length; i++) {
-      let line = subSourceCodeArray[i];
-      if ((new RegExp('seg').test(line))) {
-        console.log(this.dseg)
-        return;
-      }
-      this.dseg[i] = line;
-    }
-    console.log(this.dseg);
+    console.log(seg);
   }
   setDef(line) {
     let def = line[1];

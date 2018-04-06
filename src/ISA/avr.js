@@ -5,8 +5,16 @@ export class Avr {
       "MOV" : this.MOV,
       "LDI" : this.LDI
     }
+    this.memory = this.CreateMemory();
   }
 
+  CreateMemory() {
+    let memory = {};
+    for (let i = 0; i < 32768; i++) {
+      let binary = (i).toString(16);
+      console.log(binary);
+    }
+  }
   CreateRegisters() {
     let registers = {};
     registers["general"] = this.CreateGeneralRegisters();
