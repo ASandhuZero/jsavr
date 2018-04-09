@@ -5,15 +5,7 @@ export class Avr {
       "MOV" : this.MOV,
       "LDI" : this.LDI
     }
-    this.memory = this.CreateMemory();
-  }
-
-  CreateMemory() {
-    let memory = {};
-    for (let i = 0; i < 32768; i++) {
-      let binary = (i).toString(16);
-      console.log(binary);
-    }
+    this.memory = {};
   }
   CreateRegisters() {
     let registers = {};
@@ -21,7 +13,20 @@ export class Avr {
     registers["special"] = this.CreateSpecialRegisters();
     return registers;
   }
-  
+  UpdateMemory(data, mem_location) {
+    console.log(data, mem_location);
+    let new_mem = mem_location + (1).toString(16);
+    if (data === "byte") {
+      this.memory[new_mem] = data;
+    } else {
+      if (new_mem/2 !== 0) {
+        console.error('fucked')
+      }
+      this.memory[new_mem] = data;
+    }
+    console.log(this.memory);
+    
+  }
   CreateGeneralRegisters() {
     return "General register PLACEHOLDER";
   }
